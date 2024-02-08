@@ -1,10 +1,12 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const User = require('./database')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+require('dotenv').config();
 const passport = require('passport')
+const User = require('./database')
+const { chummaFunction, authenticateRoute } = require('./functionality')
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
@@ -38,13 +40,12 @@ app.post('/signup', (req, res)=>{
                     }
                 })
             })
-
-            // else{
-            //     return res.status(500).json({
-            //         status:"fail",
-            //         message:"something failed on hashing the password"
-            //     })
-            // }
+            .catch((err) => {
+                return res.status(500).json({
+                    status:"fail",
+                    message:"something went wrong"
+                })
+            })
         }
     })
 })
@@ -60,7 +61,7 @@ app.post('/login', (req, res)=>{
                                 userName:user.userName,
                                 userId: user._id
                             }
-                    const token = jwt.sign(payload, "something secret to be saved in the env", {expiresIn:"1d"})
+                    const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn:"1d"})
                     return res.status(200).json({
                         status:"success",
                         message:"successfully logged in.... And here is your token...!!!",
@@ -86,7 +87,7 @@ app.post('/login', (req, res)=>{
 })
 
 app.get('/protected', passport.authenticate('jwt', {session:false}), (req, res)=>{
-    console.log(req.user);
+    console.log("req.user");
     res.status(200).json({
         status:"success",
         message:"user details",
@@ -97,7 +98,12 @@ app.get('/protected', passport.authenticate('jwt', {session:false}), (req, res)=
     })
 })
 
-const PORT = 5000
-app.listen(PORT, (req, res)=>{
-    console.log(`server running on port: ${PORT}` );
+
+
+app.get('/test', authenticateRoute, chummaFunction)
+app.use('/*', (req, res) => res.send("entered route that is not defined"))
+
+app.listen(process.env.PORT, (req, res)=>{
+    console.log(`server running on port: ${process.env.PORT}` );
 })
+

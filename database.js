@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 
-
-mongoose.connect("mongodb://localhost:27017/passport-JWT-Strategy");
+mongoose.connect(`mongodb://${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DB_NAME}`);
 mongoose.connection
   .once("open", () => {
     console.log("DB connected");
